@@ -82,6 +82,10 @@ public class VistaGeneral extends javax.swing.JFrame {
         model.addRow(new Object[]{paso});
     }
      
+    public void insertarTexto(String texto) {
+        tnArea.setText(texto);
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -108,7 +112,7 @@ public class VistaGeneral extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         tnArea = new javax.swing.JTextArea();
         jScrollPane5 = new javax.swing.JScrollPane();
-        jTextArea2 = new javax.swing.JTextArea();
+        tnBigO = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 720));
@@ -151,7 +155,7 @@ public class VistaGeneral extends javax.swing.JFrame {
         jLabel4.setBackground(new java.awt.Color(255, 255, 255));
         jLabel4.setFont(new java.awt.Font("Microsoft New Tai Lue", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("INGRESAR ALGORITMO: ");
+        jLabel4.setText("INGRESAR ALGORITMO EN C (): ");
 
         tbSimbolos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -228,9 +232,9 @@ public class VistaGeneral extends javax.swing.JFrame {
         tnArea.setRows(5);
         jScrollPane3.setViewportView(tnArea);
 
-        jTextArea2.setColumns(20);
-        jTextArea2.setRows(5);
-        jScrollPane5.setViewportView(jTextArea2);
+        tnBigO.setColumns(20);
+        tnBigO.setRows(5);
+        jScrollPane5.setViewportView(tnBigO);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -399,10 +403,10 @@ public class VistaGeneral extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTable tablaPasos;
     public javax.swing.JTable tbSimbolos;
     private javax.swing.JTextArea tnArea;
+    private javax.swing.JTextArea tnBigO;
     public javax.swing.JTextArea txAreaEntradaDatos;
     public javax.swing.JLabel unmsm;
     // End of variables declaration//GEN-END:variables

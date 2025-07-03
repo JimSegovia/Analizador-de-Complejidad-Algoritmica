@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.swing.JTextArea;
 import vista.VistaGeneral;
 
 public class AnalizadorComplejidad {
@@ -26,7 +27,6 @@ public class AnalizadorComplejidad {
         "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
         "printf", "scanf", "endl", "string", "using", "namespace", "std"
     );
-    
     
     
         public void setVista(vista.VistaGeneral vista) {
@@ -451,6 +451,8 @@ for (int i = 0; i < pilaBloques.size(); i++) {
 log("===================\n");
         
         log("Complejidad total: " + totalOE);
+        
+        vista.insertarTexto("" + totalOE);
     }
 
 
