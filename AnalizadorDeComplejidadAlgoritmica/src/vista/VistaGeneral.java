@@ -3,6 +3,7 @@ package vista;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import analizador.AnalizadorComplejidad;
 
 
 public class VistaGeneral extends javax.swing.JFrame {
@@ -15,19 +16,28 @@ public class VistaGeneral extends javax.swing.JFrame {
 
     private void configurarTablas() {
         // Configurar modelo para la tabla de símbolos
-        String[] columnasSimbolos = {"Pila", "Entrada",  "Acción"};
+        String[] columnasSimbolos = {"Pasos de Análisis"};
         DefaultTableModel modelSimbolos = new DefaultTableModel(columnasSimbolos, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        tbSimbolos.setModel(modelSimbolos);
+        
+                String[] comparacionSimbolos = {"Algoritmo","Complejidad","T(n) Aproximado"};
+        DefaultTableModel ComparacionSimbolos = new DefaultTableModel(comparacionSimbolos, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tablaPasos.setModel(modelSimbolos);
+        tbSimbolos.setModel(ComparacionSimbolos);
     }    
     
     private void personalizarTablas() {      
         // Personalizar apariencia de las tablas
-        tbSimbolos.getTableHeader().setReorderingAllowed(false);
+        tablaPasos.getTableHeader().setReorderingAllowed(false);
         // Ajustar anchos de columnas
         tbSimbolos.getColumnModel().getColumn(0).setPreferredWidth(40);
         tbSimbolos.getColumnModel().getColumn(1).setPreferredWidth(180);
@@ -35,24 +45,41 @@ public class VistaGeneral extends javax.swing.JFrame {
     }
 
     
-     private void analizar() {
-        DefaultTableModel modelSimbolos = (DefaultTableModel) tbSimbolos.getModel();
-        modelSimbolos.setRowCount(0);
-        
-        String codigo = txAreaEntradaDatos.getText().trim();
-        if (codigo.isEmpty()) {
+     private void analizarComplejidad() {
+        DefaultTableModel TablaPasos = (DefaultTableModel) tablaPasos.getModel();
+        TablaPasos.setRowCount(0);     
+        // Extraer texto del componente gráfico (JTextArea)
+        String textoCompleto = txAreaEntradaDatos.getText().trim();
+
+        // Validar que no esté vacío
+        if (textoCompleto.isEmpty()) {
             JOptionPane.showMessageDialog(this, 
                 "Por favor ingrese código para analizar", 
                 "Advertencia", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
-        
+
+        // Dividir el texto en líneas y procesarlo como el primer ejemplo
+        StringBuilder codigo = new StringBuilder();
+        String[] lineas = textoCompleto.split("\n");
+
+        for (String linea : lineas) {
+            // Si encuentra "END", detener el procesamiento
+            if (linea.equals("END")) {
+                break;
+            }
+            codigo.append(linea).append("\n");
+        }
+
+        // Procesar el código con el analizador usando StringBuilder directamente
+        AnalizadorComplejidad analizadorComplejidad = new AnalizadorComplejidad();
+        analizadorComplejidad.setVista(this); // Pasar esta vista al analizador
+        analizadorComplejidad.procesarCodigo(codigo);
      }
      
-     public void agregarFila(String pila, String entrada, String accion) {
-        DefaultTableModel model = (DefaultTableModel) tbSimbolos.getModel();
-        model.addRow(new Object[]{pila, entrada, accion});
+     public void agregarFilaPasos(String paso) {
+        DefaultTableModel model = (DefaultTableModel) tablaPasos.getModel();
+        model.addRow(new Object[]{paso});
     }
      
     @SuppressWarnings("unchecked")
@@ -75,7 +102,13 @@ public class VistaGeneral extends javax.swing.JFrame {
         btnLimpiar2 = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tablaPasos = new javax.swing.JTable();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tnArea = new javax.swing.JTextArea();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        jTextArea2 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 720));
@@ -169,7 +202,7 @@ public class VistaGeneral extends javax.swing.JFrame {
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
         jLabel6.setText("COMPARACIÓN CON OTROS ALGORITMOS:");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tablaPasos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null},
                 {null},
@@ -180,7 +213,24 @@ public class VistaGeneral extends javax.swing.JFrame {
                 "PASOS DEL ANÁLISIS"
             }
         ));
-        jScrollPane4.setViewportView(jTable1);
+        jScrollPane4.setViewportView(tablaPasos);
+
+        jLabel7.setFont(new java.awt.Font("Microsoft New Tai Lue", 1, 20)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel7.setText("T(n):");
+
+        jLabel8.setFont(new java.awt.Font("Microsoft New Tai Lue", 1, 20)); // NOI18N
+        jLabel8.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel8.setText("NOTACION BIG O:");
+
+        tnArea.setEditable(false);
+        tnArea.setColumns(20);
+        tnArea.setRows(5);
+        jScrollPane3.setViewportView(tnArea);
+
+        jTextArea2.setColumns(20);
+        jTextArea2.setRows(5);
+        jScrollPane5.setViewportView(jTextArea2);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -201,22 +251,28 @@ public class VistaGeneral extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnLimpiar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGap(124, 124, 124))
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(btnLimpiar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGap(28, 28, 28))
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(jScrollPane2)
-                                        .addGap(28, 28, 28))))
+                                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(124, 124, 124))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btnLimpiar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(28, 28, 28))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jScrollPane2)
+                                .addGap(28, 28, 28))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addGap(355, 355, 355)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel7)
+                                    .addComponent(jLabel8)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 313, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 313, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGap(27, 27, 27)
                                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                                 .addGap(29, 29, 29))))
                     .addComponent(jSeparator1))
@@ -236,12 +292,21 @@ public class VistaGeneral extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 43, Short.MAX_VALUE)
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnLimpiar2, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -266,7 +331,7 @@ public class VistaGeneral extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
-    analizar();
+    analizarComplejidad();
     }//GEN-LAST:event_btnAnalizarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
@@ -274,6 +339,9 @@ public class VistaGeneral extends javax.swing.JFrame {
         DefaultTableModel modelSimbolos = (DefaultTableModel) tbSimbolos.getModel();
         modelSimbolos.setRowCount(0);
         txAreaEntradaDatos.setText("");
+        
+        DefaultTableModel TablaPasos = (DefaultTableModel) tablaPasos.getModel();
+        TablaPasos.setRowCount(0);
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnLimpiar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiar2ActionPerformed
@@ -321,14 +389,20 @@ public class VistaGeneral extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JTable tablaPasos;
     public javax.swing.JTable tbSimbolos;
+    private javax.swing.JTextArea tnArea;
     public javax.swing.JTextArea txAreaEntradaDatos;
     public javax.swing.JLabel unmsm;
     // End of variables declaration//GEN-END:variables
