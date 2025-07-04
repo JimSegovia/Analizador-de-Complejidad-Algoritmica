@@ -86,6 +86,9 @@ public class VistaGeneral extends javax.swing.JFrame {
         tnArea.setText(texto);
     }
     
+    public void insertarTextoBigO(String texto) {
+        tnBigO.setText(texto);
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

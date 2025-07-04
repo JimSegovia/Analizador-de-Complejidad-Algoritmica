@@ -453,10 +453,80 @@ log("===================\n");
         log("Complejidad total: " + totalOE);
         
         vista.insertarTexto("" + totalOE);
+        String BigOCalculado = calcularBigOAvanzado(totalOE.toString());
+        System.out.println(BigOCalculado);
+        vista.insertarTextoBigO("" + BigOCalculado);
     }
 
 
-    
+    // Versión más robusta que analiza la expresión matemática completa
+    public String calcularBigOAvanzado(String expresion) {
+        // Remover espacios y convertir a minúsculas
+        expresion = expresion.replaceAll("\\s+", "").toLowerCase();
+        
+        int maxExponente = 0;
+        boolean tieneN = false;
+        boolean tieneLog = false;
+        
+        // Buscar términos con N^exponente
+        String[] terminos = expresion.split("[+\\-]");
+        
+        for (String termino : terminos) {
+            if (termino.contains("n")) {
+                tieneN = true;
+                
+                // Buscar exponente explícito (n^2, n^3, etc.)
+                if (termino.contains("n^")) {
+                    String[] partes = termino.split("n\\^");
+                    if (partes.length > 1) {
+                        try {
+                            int exp = Integer.parseInt(partes[1].replaceAll("[^0-9]", ""));
+                            maxExponente = Math.max(maxExponente, exp);
+                        } catch (NumberFormatException e) {
+                            // Si no se puede parsear, asumir exponente 1
+                            maxExponente = Math.max(maxExponente, 1);
+                        }
+                    }
+                }
+                // Buscar notación con superíndices (n², n³, etc.)
+                else if (termino.contains("n²")) {
+                    maxExponente = Math.max(maxExponente, 2);
+                }
+                else if (termino.contains("n³")) {
+                    maxExponente = Math.max(maxExponente, 3);
+                }
+                else {
+                    // Solo N sin exponente explícito
+                    maxExponente = Math.max(maxExponente, 1);
+                }
+            }
+            
+            if (termino.contains("log")) {
+                tieneLog = true;
+            }
+        }
+        
+        // Determinar Big O basado en el análisis
+        if (maxExponente >= 3) {
+            return "O(N³)";
+        }
+        else if (maxExponente == 2) {
+            return "O(N²)";
+        }
+        else if (maxExponente == 1) {
+            if (tieneLog) {
+                return "O(N log N)";
+            } else {
+                return "O(N)";
+            }
+        }
+        else if (tieneLog) {
+            return "O(log N)";
+        }
+        else {
+            return "O(1)";
+        }
+    }
     
     // Metodo para analizar ciclo FOR
     private static CicloInfo analizarFor(String ln) {
