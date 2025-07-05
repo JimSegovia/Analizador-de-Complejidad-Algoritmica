@@ -1,20 +1,33 @@
 package vista;
 
-import java.util.List;
+
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import analizador.AnalizadorComplejidad;
+import analizador.ComparadorAlgoritmos;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class VistaGeneral extends javax.swing.JFrame {
-
+    private int contadorAlgoritmos = 0;
+public ComparadorAlgoritmos comparador;
     public VistaGeneral() {
         initComponents();
         configurarTablas();
         personalizarTablas();
-    }
 
-    private void configurarTablas() {
+    // Inicializar el comparador
+    comparador = new ComparadorAlgoritmos(tbSimbolos);
+
+    // Agregar algoritmos predeterminados
+    comparador.agregarAlgoritmo("Burbuja", "O(n²)", "n²/2 + n/2");
+    comparador.agregarAlgoritmo("Selección", "O(n²)", "n²/2 + n/2");
+    comparador.agregarAlgoritmo("Inserción", "O(n²)", "n²/4 + n/2");
+}
+    
+
+    public void configurarTablas() {
         // Configurar modelo para la tabla de símbolos
         String[] columnasSimbolos = {"Pasos de Análisis"};
         DefaultTableModel modelSimbolos = new DefaultTableModel(columnasSimbolos, 0) {
@@ -23,7 +36,7 @@ public class VistaGeneral extends javax.swing.JFrame {
                 return false;
             }
         };
-        
+
                 String[] comparacionSimbolos = {"Algoritmo","Complejidad","T(n) Aproximado"};
         DefaultTableModel ComparacionSimbolos = new DefaultTableModel(comparacionSimbolos, 0) {
             @Override
@@ -35,47 +48,56 @@ public class VistaGeneral extends javax.swing.JFrame {
         tbSimbolos.setModel(ComparacionSimbolos);
     }    
     
-    private void personalizarTablas() {      
+    public void personalizarTablas() {      
         // Personalizar apariencia de las tablas
         tablaPasos.getTableHeader().setReorderingAllowed(false);
         // Ajustar anchos de columnas
         tbSimbolos.getColumnModel().getColumn(0).setPreferredWidth(40);
         tbSimbolos.getColumnModel().getColumn(1).setPreferredWidth(180);
         tbSimbolos.getColumnModel().getColumn(2).setPreferredWidth(160);
+
     }
 
     
-     private void analizarComplejidad() {
-        DefaultTableModel TablaPasos = (DefaultTableModel) tablaPasos.getModel();
-        TablaPasos.setRowCount(0);     
-        // Extraer texto del componente gráfico (JTextArea)
-        String textoCompleto = txAreaEntradaDatos.getText().trim();
+    private void analizarComplejidad() {
+    DefaultTableModel TablaPasos = (DefaultTableModel) tablaPasos.getModel();
+    TablaPasos.setRowCount(0);  // Limpiar tabla de pasos
 
-        // Validar que no esté vacío
-        if (textoCompleto.isEmpty()) {
-            JOptionPane.showMessageDialog(this, 
-                "Por favor ingrese código para analizar", 
-                "Advertencia", JOptionPane.WARNING_MESSAGE);
-            return;
+    // Extraer texto del componente gráfico (JTextArea)
+    String textoCompleto = txAreaEntradaDatos.getText().trim();
+
+    // Validar que no esté vacío
+    if (textoCompleto.isEmpty()) {
+        JOptionPane.showMessageDialog(this, 
+            "Por favor ingrese código para analizar", 
+            "Advertencia", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    // Dividir el texto en líneas (usar "\n" para dividir por saltos de línea)
+    StringBuilder codigo = new StringBuilder();
+    String[] lineas = textoCompleto.split("\n");  // <-- Corregido de "" a "\n"
+
+    for (String linea : lineas) {
+        // Si encuentra "END", detener el procesamiento
+        if (linea.equals("END")) {
+            break;
         }
+        codigo.append(linea).append("\n");  // <-- Corregido de "" a "\n"
+    }
 
-        // Dividir el texto en líneas y procesarlo como el primer ejemplo
-        StringBuilder codigo = new StringBuilder();
-        String[] lineas = textoCompleto.split("\n");
+    // Generar nombre dinámico para el nuevo algoritmo
+    contadorAlgoritmos++;
+    String nombreAlgoritmo = "Algoritmo " + contadorAlgoritmos;
 
-        for (String linea : lineas) {
-            // Si encuentra "END", detener el procesamiento
-            if (linea.equals("END")) {
-                break;
-            }
-            codigo.append(linea).append("\n");
-        }
+    // Procesar el código con el analizador
+    AnalizadorComplejidad analizador = new AnalizadorComplejidad();
+    analizador.setVista(this);  // Pasar esta vista al analizador
+    analizador.procesarCodigo(codigo);  // Procesar el código
 
-        // Procesar el código con el analizador usando StringBuilder directamente
-        AnalizadorComplejidad analizadorComplejidad = new AnalizadorComplejidad();
-        analizadorComplejidad.setVista(this); // Pasar esta vista al analizador
-        analizadorComplejidad.procesarCodigo(codigo);
-     }
+    // Agregar el algoritmo al comparador **después** de procesar
+    comparador.agregarAlgoritmo(nombreAlgoritmo, tnBigO.getText(), tnArea.getText());
+} 
      
      public void agregarFilaPasos(String paso) {
         DefaultTableModel model = (DefaultTableModel) tablaPasos.getModel();
@@ -161,11 +183,9 @@ public class VistaGeneral extends javax.swing.JFrame {
         jLabel4.setText("INGRESAR ALGORITMO EN C (): ");
 
         tbSimbolos.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
+            new Object [][] { },
             new String [] {
-                "Pila", "Entrada", "Acción"
+                "Algoritmos", "Complejidad", "T(n) Aproximado"
             }
         ));
         jScrollPane2.setViewportView(tbSimbolos);
@@ -352,7 +372,21 @@ public class VistaGeneral extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarActionPerformed
 
     private void btnLimpiar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiar2ActionPerformed
-        // TODO add your handling code here:
+    
+    Map<String, String> funcionesAGraficar = new HashMap<>();
+    
+    String funcionAnalizada = tnArea.getText().trim();
+    if (!funcionAnalizada.isEmpty()) {
+        funcionesAGraficar.put("Nuevo Algoritmo", funcionAnalizada);
+    }
+
+    // Agregar los algoritmos predeterminados
+    funcionesAGraficar.put("Burbuja", "n * n / 2 + n / 2");
+    funcionesAGraficar.put("Selección", "n * n / 2 + n / 2");
+    funcionesAGraficar.put("Inserción", "n * n / 4 + n / 2");
+        // Abrir ventana con el gráfico
+    VistaGrafico grafico = new VistaGrafico(funcionesAGraficar);
+    grafico.setVisible(true);
     }//GEN-LAST:event_btnLimpiar2ActionPerformed
 
     public static void main(String args[]) {
